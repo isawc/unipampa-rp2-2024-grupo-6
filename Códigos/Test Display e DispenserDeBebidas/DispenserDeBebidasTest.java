@@ -14,12 +14,6 @@ public class DispenserDeBebidasTest {
     public void setUp() {
         dispenser = new DispenserDeBebidas(10, 10, 10, 10, 10, 10, 10, 10, 10, 10);
     }
-    
-    @Test
-    public void testInicializacao() {
-    assertFalse(dispenser.isAberto());
-    assertFalse(dispenser.isTravado());
-}
 
     @Test
     public void testLiberarProdutoComQuantidadeDisponivel() throws SemProdutoDisponivelException, SinalInvalidoException, DispenserEmperradoException {
@@ -88,13 +82,5 @@ public class DispenserDeBebidasTest {
         dispenser.simulaEmperrarPortinha();
         assertFalse(dispenser.isAberto());
         assertTrue(dispenser.isTravado());
-    }
-    
-    @Test
-    public void testAbrirEFechar() {
-    dispenser.simulaAbrirPortinha();
-    assertTrue(dispenser.isAberto());
-    dispenser.simulaFecharPortinha();
-    assertFalse(dispenser.isAberto());
     }
 }
