@@ -1,4 +1,4 @@
-package io;
+import io.Display;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -21,18 +21,20 @@ public class DispenserTest {
     }
 
     @Test
-    public void testDisplayEntradaEntupida() {
-        display.mostrarMensagem("ENTRADA DE $ ENTUPIDA");
-        String mensagemAtual = display.simulaVerMensagem();
-        System.out.println(mensagemAtual);
-        assertEquals("ENTRADA DE $ ENTUPIDA", mensagemAtual);
+    public void testMostrarMensagemCurta() {
+        // Testa com uma mensagem curta
+        String mensagemCurta = "Olá";
+        display.mostrarMensagem(mensagemCurta);
+        assertEquals(mensagemCurta, display.simulaVerMensagem());
+    }
+   
+        @Test
+    public void testMostrarMensagemLonga() {
+        // Testa com uma mensagem longa (maior que 25 caracteres)
+        String mensagemLonga = "Esta é uma mensagem muito longa para o display";
+        display.mostrarMensagem(mensagemLonga);
+        assertEquals(mensagemLonga.substring(0, 25), display.simulaVerMensagem());
     }
 
-    @Test
-    public void testDisplayEscolhaUmaBebida() {
-        display.mostrarMensagem("ESCOLHA UMA BEBIDA");
-        String mensagemAtual = display.simulaVerMensagem();
-        System.out.println(mensagemAtual);
-        assertEquals("ESCOLHA UMA BEBIDA", mensagemAtual);
-    }
+   
 }
