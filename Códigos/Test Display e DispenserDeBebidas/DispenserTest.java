@@ -22,7 +22,6 @@ public class DispenserTest {
 
     @Test
     public void testMostrarMensagemCurta() {
-        // Testa com uma mensagem curta
         String mensagemCurta = "Olá";
         display.mostrarMensagem(mensagemCurta);
         assertEquals(mensagemCurta, display.simulaVerMensagem());
@@ -30,7 +29,6 @@ public class DispenserTest {
    
         @Test
     public void testMostrarMensagemLonga() {
-        // Testa com uma mensagem longa (maior que 25 caracteres)
         String mensagemLonga = "Esta é uma mensagem muito longa para o display";
         display.mostrarMensagem(mensagemLonga);
         assertEquals(mensagemLonga.substring(0, 25), display.simulaVerMensagem());
