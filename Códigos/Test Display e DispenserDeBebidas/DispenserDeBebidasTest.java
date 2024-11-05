@@ -1,4 +1,4 @@
-package maquinario;
+import maquinario.DispenserDeBebidas;
 import excecoes.DispenserEmperradoException;
 import excecoes.SemProdutoDisponivelException;
 import excecoes.SinalInvalidoException;
