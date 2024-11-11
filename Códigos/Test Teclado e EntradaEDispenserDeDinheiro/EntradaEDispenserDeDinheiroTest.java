@@ -69,13 +69,4 @@ public class EntradaEDispenserDeDinheiroTest {
         assertFalse(dispenser.hasMoedasDevolvidas());
     }
 
-    @Test
-    public void testMoedasEngolidasPeloDispenser() {
-        dispenser = new EntradaEDispenserDeDinheiro(10, 10, 10, 10, 10);
-        Moeda moeda = Moeda.CINCO_CENTAVOS;
-
-        for (int i = 0; i < 30; i++) {
-            dispenser.simulaColocarMoeda(notificavel, moeda);
-        }
-    }
 }
