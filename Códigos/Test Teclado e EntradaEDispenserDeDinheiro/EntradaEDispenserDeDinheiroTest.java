@@ -1,3 +1,6 @@
+import excecoes.EntradaDeDinheiroEntupidaException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import maquinario.EntradaEDispenserDeDinheiro;
 import maquinario.Moeda;
 import org.junit.Before;
@@ -12,6 +15,7 @@ public class EntradaEDispenserDeDinheiroTest {
 
     @Before
     public void inicializar() {
+        // substituir pelo controlador
         notificavel = new NotificacaoNew();
     }
 
@@ -67,6 +71,26 @@ public class EntradaEDispenserDeDinheiroTest {
         dispenser.simulaPegarMoedas(Moeda.CINCO_CENTAVOS);
 
         assertFalse(dispenser.hasMoedasDevolvidas());
+    }
+    
+    @Test
+    public void testDevolverDinheiro(){
+        dispenser = new EntradaEDispenserDeDinheiro(10, 10, 10, 10, 10);
+        
+        Moeda[] moedas = Moeda.values();
+        for (Moeda moeda : moedas) {
+            dispenser.simulaColocarMoeda(notificavel, moeda);
+            assertEquals(true, dispenser.hasDinheiroColocado());
+            
+            try {
+                dispenser.devolverDinheiro();
+                assertEquals(true, dispenser.hasMoedasDevolvidas());
+                dispenser.simulaPegarMoedas(moeda);
+                assertEquals(false, dispenser.hasMoedasDevolvidas());
+            } catch (EntradaDeDinheiroEntupidaException ex) {
+                Logger.getLogger(EntradaEDispenserDeDinheiroTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
 }
