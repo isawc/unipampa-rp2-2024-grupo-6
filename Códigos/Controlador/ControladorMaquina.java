@@ -1,66 +1,132 @@
-
-import io.Entrada;
+import io.Teclado;
 import io.Saida;
-import logica.*;
-import maquinario.Cofre;
 import maquinario.Dispenser;
+import maquinario.Cofre;
+import io.Entrada;
+import maquinario.EntradaEDispenserDeDinheiro;
+import maquinario.Moeda;
+import java.util.Locale;
 
+public class Controle {
+    private Dispenser bebidas;
+    private Cofre cofre;
+    private Saida saida;
+    private Entrada entrada;
+    public EntradaEDispenserDeDinheiro entradaDinheiro;
+    public boolean emManutencao = false;
+    public double valorAcumulado = 0.0;
+    public static final int LIMITE_MOEDAS = 30;
 
-public class ControladorMaquina implements Controlador, Notificavel, Operacional {
+    private static final double PRECO_COCA_COLA = 2.60;
 
-    // descrito na documentação da interface Controlador
-    public ControladorMaquina (Dispenser bebidas, Cofre cofre, Saida saida, Entrada entrada){
-        
+    public Controle(Dispenser bebidas, Cofre cofre, Saida saida, Entrada entrada, EntradaEDispenserDeDinheiro entradaDinheiro) {
+        this.bebidas = bebidas;
+        this.cofre = cofre;
+        this.saida = saida;
+        this.entrada = entrada;
+        this.entradaDinheiro = entradaDinheiro;
     }
-    
-    //logica
-        // mostrar pronto no display
-        
-        // contar moedas e mostrar resultado
-        
-        // receber valor do botão e liberar bebida
-        
-        // moedas são recolhidas
-        
-        // liberar bebida
-        
-        // destravar dispenser de bebida
-        
-        // calcular e liberar troco usando moedas do cofre
-        
-        // bebida e dinheiro são retirados pelo comprador
-        
-        // mostrar pronto no display
-    
-    @Override
+
+    private double obterValorMoeda(Moeda tipo) {
+        switch (tipo) {
+            case CINQUENTA_CENTAVOS:
+                return 0.50;
+            case VINTE_E_CINCO_CENTAVOS:
+                return 0.25;
+            case DEZ_CENTAVOS:
+                return 0.10;
+            case UM_REAL:
+                return 1.00;
+            default:
+                throw new IllegalArgumentException("Moeda desconhecida: " + tipo);
+        }
+    }
+
+    private boolean dentroLimiteDeMoedas(Moeda tipo) {
+        return entradaDinheiro.contarMoedasEntrada(tipo) <= LIMITE_MOEDAS;
+    }
+
+    public boolean insereDinheiro(Moeda tipo) {
+        if (emManutencao) {
+            saida.mostrarMensagem("PROBLEMA NO DISPENSER");
+            return false;
+        }
+        try {
+            entradaDinheiro.simulaColocarMoeda(this, tipo);
+
+            if (!dentroLimiteDeMoedas(tipo)) {
+                saida.mostrarMensagem("ENTRADA DE $ ENTUPIDA");
+                return false;
+            }
+            valorAcumulado += obterValorMoeda(tipo);
+            notificaDinheiroInserido();
+            return true;
+        } catch (Exception e) {
+            saida.mostrarMensagem("PROBLEMA NO DISPENSER");
+            return false;
+        }
+    }
+
     public void notificaDinheiroInserido() {
-        
+        String mensagem = (valorAcumulado == 0) ? "PRONTO" : "R$" + String.format(Locale.US, "%.2f", valorAcumulado);
+        saida.mostrarMensagem(mensagem);
     }
 
-    @Override
     public void notificaBotaoPressionado() {
-        
+        String mensagem = (emManutencao) ? "PROBLEMA NO DISPENSER" : "ESCOLHA UMA BEBIDA";
+        saida.mostrarMensagem(mensagem);
     }
 
-    @Override
-    public boolean isEmManutencao() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void iniciarManutencao() {
+        emManutencao = true;
+        saida.mostrarMensagem("PROBLEMA NO DISPENSER");
     }
-    
-    // Moedas de 5, 10, 25, 50 centavos e 1 real
-    // Moedas do reservatorio são usadas de troco
-    // maximo de 2.000 moedas de cada tipo
-    // maximo 100 latas de cada tipo
-    // moedas recebidas são recolhidas para o cofre apenas apos selecionar uma bebida
-    // moedas recebidas não passam pelo cofre em caso de devolução
-    // Cabem no maximo 30 moedas na entrada, apartir disso a maquina entope ao engolir ou devolver precisando de manutenção
-    // o troco prioriza liberar moedas de maior valor
-    // valores financeiros mostrados no display devem possuir R$ sem espaços, usando . para separarcentavos (sempre com 2 digitos):
-    // exemplo: R$3.55
-    // mensagens de interação e erro, não precisam considerar alinhamento, nem preencher todos o caracteres disponiveis; não devem usar caracteres com acento ou marcações graficas
-    // exemplo: BEBIDA INDISPONIVEL
-    // maximo de 25 carracteres no display, caso passe do limite o a emnsagem é truncada para 25 caracteres
-    // se estiver em falta e tbm n houver dinheiro suficiente para ela, a mensagem no display é bebida indisponivel e não dinheiro insuficiente
-    // situações de informação no display: pronta para uso, contagem do dinheiro colocado, bebida indisponivel, dinheiro insuficiente, e mensagens de erro. em outras casso havera uma mensagem sem caracteres.
-    
+
+    public void encerrarManutencao() {
+        emManutencao = false;
+        saida.mostrarMensagem("PRONTO");
+    }
+
+    public void selecionarBebida(int codigo) {
+        double preco = obterValorMoeda(Moeda.CINQUENTA_CENTAVOS);  // Exemplo simplificado, normalmente pega do botão.
+
+        if (valorAcumulado < preco) {
+            saida.mostrarMensagem("DINHEIRO INSUFICIENTE");
+            return;
+        }
+
+        try {
+            bebidas.liberarProduto(codigo);
+            double troco = valorAcumulado - preco;
+            darTroco(troco);
+            valorAcumulado = 0.0;
+            saida.mostrarMensagem("BEBIDA LIBERADA. TROCO DE R$" + String.format("%.2f", troco) + " entregue.");
+        } catch (Exception e) {
+            saida.mostrarMensagem("PROBLEMA NO DISPENSER: " + e.getMessage());
+        }
+    }
+
+    public void darTroco(double troco) {
+        if (troco <= 0) {
+            return;
+        }
+
+        Moeda[] moedas = Moeda.values();
+        for (Moeda moeda : moedas) {
+            double valorMoeda = obterValorMoeda(moeda);
+            int quantidade = (int) (troco / valorMoeda);
+
+            while (quantidade > 0 && dentroLimiteDeMoedas(moeda)) {
+                saida.mostrarMensagem("TROCO: " + moeda + " R$" + valorMoeda);
+                troco -= valorMoeda;
+                quantidade--;
+            }
+        }
+
+        if (troco > 0) {
+            saida.mostrarMensagem("FALTA R$" + String.format("%.2f", troco));
+        } else {
+            saida.mostrarMensagem("TROCO FINALIZADO");
+        }
+    }
 }
