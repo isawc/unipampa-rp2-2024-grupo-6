@@ -1,3 +1,4 @@
+import excecoes.DispenserEmperradoException;
 import io.Teclado;
 import io.Saida;
 import maquinario.Dispenser;
@@ -6,25 +7,42 @@ import io.Entrada;
 import maquinario.EntradaEDispenserDeDinheiro;
 import maquinario.Moeda;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import logica.Controlador;
+import logica.Notificavel;
+import logica.Operacional;
 
-public class Controle {
+public class Controle implements Controlador, Notificavel, Operacional{
     private Dispenser bebidas;
     private Cofre cofre;
     private Saida saida;
     private Entrada entrada;
-    public EntradaEDispenserDeDinheiro entradaDinheiro;
+    //public EntradaEDispenserDeDinheiro entradaDinheiro;
     public boolean emManutencao = false;
     public double valorAcumulado = 0.0;
     public static final int LIMITE_MOEDAS = 30;
 
     private static final double PRECO_COCA_COLA = 2.60;
+    private static final double PRECO_COCA_LIGTH = 2.95;
+    private static final double PRECO_COCA_ZERO = 3.10;
+    private static final double PRECO_FANTA_LARANJA = 1.95;
+    private static final double PRECO_FANTA_UVA = 1.95;
+    private static final double PRECO_KUAT_GUARANA = 1.75;
+    private static final double PRECO_SCHWEPPES = 2.75;
+    private static final double PRECO_SCHWEPPES_CITRUS = 2.85;
+    private static final double PRECO_SPRITE = 2.25;
+    private static final double PRECO_SPRITE_ZERO = 2.90;
+    
 
-    public Controle(Dispenser bebidas, Cofre cofre, Saida saida, Entrada entrada, EntradaEDispenserDeDinheiro entradaDinheiro) {
+    public Controle(Dispenser bebidas, Cofre cofre, Saida saida, Entrada entrada) {
         this.bebidas = bebidas;
         this.cofre = cofre;
         this.saida = saida;
         this.entrada = entrada;
-        this.entradaDinheiro = entradaDinheiro;
+        //this.entradaDinheiro = entradaDinheiro;
+        
+        saida.mostrarMensagem("PRONTO");
     }
 
     private double obterValorMoeda(Moeda tipo) {
@@ -67,11 +85,18 @@ public class Controle {
         }
     }
 
+    @Override
     public void notificaDinheiroInserido() {
+        valorAcumulado = this.cofre.contarMoedasEntrada(Moeda.UM_REAL) * 1
+                + this.cofre.contarMoedasEntrada(Moeda.CINCO_CENTAVOS) * 0.05 
+                + this.cofre.contarMoedasEntrada(Moeda.CINQUENTA_CENTAVOS) * 0.50
+                + this.cofre.contarMoedasEntrada(Moeda.DEZ_CENTAVOS) * 0.10
+                + this.cofre.contarMoedasEntrada(Moeda.VINTE_E_CINCO_CENTAVOS) * 0.25;
         String mensagem = (valorAcumulado == 0) ? "PRONTO" : "R$" + String.format(Locale.US, "%.2f", valorAcumulado);
         saida.mostrarMensagem(mensagem);
     }
 
+    @Override
     public void notificaBotaoPressionado() {
         String mensagem = (emManutencao) ? "PROBLEMA NO DISPENSER" : "ESCOLHA UMA BEBIDA";
         saida.mostrarMensagem(mensagem);
@@ -127,6 +152,31 @@ public class Controle {
             saida.mostrarMensagem("FALTA R$" + String.format("%.2f", troco));
         } else {
             saida.mostrarMensagem("TROCO FINALIZADO");
+        }
+    }
+
+    @Override
+    public void notificaFechamentoDaPortinha() {
+        
+    }
+
+    @Override
+    public void notificaAberturaDaPortinha() {
+        
+    }
+
+    @Override
+    public void notificaMoedasPegas() {
+        
+    }
+
+    @Override
+    public boolean isEmManutencao() {
+        if (this.emManutencao) {
+            saida.mostrarMensagem("EM MANUTENÇÃO");
+            return true;
+        } else{
+            return false;
         }
     }
 }
