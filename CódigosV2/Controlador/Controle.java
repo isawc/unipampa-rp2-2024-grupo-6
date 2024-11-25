@@ -1,4 +1,6 @@
 import excecoes.DispenserEmperradoException;
+import excecoes.SemProdutoDisponivelException;
+import excecoes.SinalInvalidoException;
 import io.Teclado;
 import io.Saida;
 import maquinario.Dispenser;
@@ -17,7 +19,7 @@ public class Controle implements Controlador, Notificavel, Operacional{
     private Dispenser bebidas;
     private Cofre cofre;
     private Saida saida;
-    private Entrada entrada;
+    private Teclado entrada;
     //public EntradaEDispenserDeDinheiro entradaDinheiro;
     public boolean emManutencao = false;
     public double valorAcumulado = 0.0;
@@ -35,7 +37,7 @@ public class Controle implements Controlador, Notificavel, Operacional{
     private static final double PRECO_SPRITE_ZERO = 2.90;
     
 
-    public Controle(Dispenser bebidas, Cofre cofre, Saida saida, Entrada entrada) {
+    public Controle(Dispenser bebidas, Cofre cofre, Saida saida, Teclado entrada) {
         this.bebidas = bebidas;
         this.cofre = cofre;
         this.saida = saida;
@@ -100,6 +102,21 @@ public class Controle implements Controlador, Notificavel, Operacional{
     public void notificaBotaoPressionado() {
         String mensagem = (emManutencao) ? "PROBLEMA NO DISPENSER" : "ESCOLHA UMA BEBIDA";
         saida.mostrarMensagem(mensagem);
+        
+        try {
+            bebidas.liberarProduto(entrada.getUltimoBotaoPressionado());
+        } catch (SemProdutoDisponivelException ex) {
+            Logger.getLogger(Controle.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SinalInvalidoException ex) {
+            Logger.getLogger(Controle.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        try {
+            bebidas.destravar();
+        } catch (DispenserEmperradoException ex) {
+            
+        }
+        
     }
 
     public void iniciarManutencao() {
