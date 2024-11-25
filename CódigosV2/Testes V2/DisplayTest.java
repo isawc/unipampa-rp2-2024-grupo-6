@@ -1,0 +1,40 @@
+import io.Display;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+public class DisplayTest {
+
+    private Display display;
+
+    @Before
+    public void setUp() {
+        display = new Display();
+    }
+
+    @Test
+    public void testDisplayProntoParaUso() {
+        display.mostrarMensagem("PRONTO");
+        String mensagemAtual = display.simulaVerMensagem();
+        System.out.println(mensagemAtual);
+        assertEquals("PRONTO", mensagemAtual);
+    }
+
+    @Test
+    public void testMostrarMensagemCurta() {
+        // Testa com uma mensagem curta
+        String mensagemCurta = "Olá";
+        display.mostrarMensagem(mensagemCurta);
+        assertEquals(mensagemCurta, display.simulaVerMensagem());
+    }
+   
+        @Test
+    public void testMostrarMensagemLonga() {
+        // Testa com uma mensagem longa (maior que 25 caracteres)
+        String mensagemLonga = "Esta é uma mensagem muito longa para o display";
+        display.mostrarMensagem(mensagemLonga);
+        assertEquals(mensagemLonga.substring(0, 25), display.simulaVerMensagem());
+    }
+
+   
+}
