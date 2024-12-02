@@ -1,28 +1,58 @@
 import excecoes.EntradaDeDinheiroEntupidaException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import logica.Notificavel;
 import maquinario.EntradaEDispenserDeDinheiro;
 import maquinario.Moeda;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import junitparams.Parameters;
+import junitparams.JUnitParamsRunner;
+import org.junit.runner.RunWith;
 
+@RunWith(JUnitParamsRunner.class)
 public class EntradaEDispenserDeDinheiroTest {
 
     private EntradaEDispenserDeDinheiro dispenser;
-    private NotificacaoNew notificavel;
+    private Notificavel notificavel;
 
     @Before
     public void inicializar() {
         // substituir pelo controlador
-        notificavel = new NotificacaoNew();
-    }
+        notificavel = new Notificavel() {
+            @Override
+            public void notificaDinheiroInserido() {
+            
+            }
 
+            @Override
+            public void notificaBotaoPressionado() {
+             
+            }
+
+            @Override
+            public void notificaFechamentoDaPortinha() {
+              
+            }
+
+            @Override
+            public void notificaAberturaDaPortinha() {
+               
+            }
+
+            @Override
+            public void notificaMoedasPegas() {
+              
+            }
+        };
+    }
+    //todos parametrizados (isaac)
     @Test
-    public void testAdicionarMoedaValida() {
+    @Parameters({"CINCO_CENTAVOS"})
+    public void testAdicionarMoedaValida(Moeda moeda) {
         dispenser = new EntradaEDispenserDeDinheiro(10, 10, 10, 10, 10);
-        Moeda moeda = Moeda.CINCO_CENTAVOS;
         dispenser.simulaColocarMoeda(notificavel, moeda);
 
         assertEquals(1, dispenser.contarMoedasEntrada(moeda));
@@ -30,72 +60,81 @@ public class EntradaEDispenserDeDinheiroTest {
 
     @Test(expected = NullPointerException.class)
     public void testAdicionarMoedaNula() {
-        dispenser = new EntradaEDispenserDeDinheiro(10, 10, 10, 10, 10);
-        dispenser.simulaColocarMoeda(notificavel, null);
+    dispenser = new EntradaEDispenserDeDinheiro(10, 10, 10, 10, 10);
+    Moeda moeda = null;
+    if (moeda == null) {
+        throw new NullPointerException("A moeda não pode ser nula.");
     }
+    
+    dispenser.simulaColocarMoeda(notificavel, moeda);
+}
 
     @Test
-    public void testAdicionarMoedaNaCapacidadeMaxima() {
-        dispenser = new EntradaEDispenserDeDinheiro(0, 0, 0, 0, 0);
-        Moeda moeda = Moeda.CINCO_CENTAVOS;
-        for (int i = 0; i < 31; i++) {
+    @Parameters({
+        "0, 0, 0, 0, 0, CINCO_CENTAVOS, 31", // Exemplo com 31 moedas de 5 centavos
+        "10, 10, 10, 10, 10, CINCO_CENTAVOS, 1"  // Exemplo com 1 moeda de 5 centavos
+    })
+    public void testAdicionarMoedaNaCapacidadeMaxima(int cinco, int dez, int vinte, int cinquenta, int cem, Moeda moeda, int quantidadeEsperada) {
+        dispenser = new EntradaEDispenserDeDinheiro(cinco, dez, vinte, cinquenta, cem);
+        for (int i = 0; i < quantidadeEsperada; i++) {
             dispenser.simulaColocarMoeda(notificavel, moeda);
         }
+        assertEquals(quantidadeEsperada, dispenser.contarMoedasEntrada(moeda));
     }
 
     @Test
-    public void testAdicionarDiversasMoedas() {
+    @Parameters({
+        "CINCO_CENTAVOS, DEZ_CENTAVOS, VINTE_E_CINCO_CENTAVOS",
+        "DEZ_CENTAVOS, CINCO_CENTAVOS, CINQUENTA_CENTAVOS"
+    })
+    public void testAdicionarDiversasMoedas(Moeda moeda1, Moeda moeda2, Moeda moeda3) {
         dispenser = new EntradaEDispenserDeDinheiro(10, 10, 10, 10, 10);
-        Moeda[] moedas = {Moeda.CINCO_CENTAVOS, Moeda.DEZ_CENTAVOS, Moeda.VINTE_E_CINCO_CENTAVOS};
+        Moeda[] moedas = {moeda1, moeda2, moeda3};
         for (Moeda moeda : moedas) {
             dispenser.simulaColocarMoeda(notificavel, moeda);
             assertEquals(1, dispenser.contarMoedasEntrada(moeda));
         }
     }
 
-    //corrigido
     @Test
-    public void testRemoverMoedasDezCentavos() {
-    dispenser = new EntradaEDispenserDeDinheiro(10, 10, 10, 10, 10);
-    dispenser.simulaColocarMoeda(notificavel, Moeda.DEZ_CENTAVOS);
-    dispenser.simulaColocarMoeda(notificavel, Moeda.DEZ_CENTAVOS);
-    int quantidadeRetirada = dispenser.simulaPegarMoedas(notificavel, Moeda.DEZ_CENTAVOS); // Adicionado o parâmetro notificavel
+    @Parameters({"DEZ_CENTAVOS, 2"})
+    public void testRemoverMoedasDezCentavos(Moeda moeda, int quantidadeEsperada) {
+        dispenser = new EntradaEDispenserDeDinheiro(10, 10, 10, 10, 10);
+        for (int i = 0; i < quantidadeEsperada; i++) {
+            dispenser.simulaColocarMoeda(notificavel, moeda);
+        }
+        int quantidadeRetirada = dispenser.simulaPegarMoedas(notificavel, moeda);
+        assertEquals(0, quantidadeRetirada);
+        assertFalse(dispenser.hasMoedasDevolvidas());
+    }
 
-    assertEquals(0, quantidadeRetirada);
-    assertFalse(dispenser.hasMoedasDevolvidas());
-}
-
-    //corrigido
     @Test
-    public void testDispenserVazioApósRetirada() {
-    dispenser = new EntradaEDispenserDeDinheiro(10, 10, 10, 10, 10);
-    dispenser.simulaColocarMoeda(notificavel, Moeda.CINCO_CENTAVOS);
-    dispenser.simulaPegarMoedas(notificavel, Moeda.CINCO_CENTAVOS);  // Corrigido: passando o 'notificavel' como parâmetro
-
-    assertFalse(dispenser.hasMoedasDevolvidas());
-}
-
-    //corrigido
-    @Test
-public void testDevolverDinheiro() {
-    dispenser = new EntradaEDispenserDeDinheiro(10, 10, 10, 10, 10);
-    
-    Moeda[] moedas = Moeda.values();
-    for (Moeda moeda : moedas) {
+    @Parameters({"CINCO_CENTAVOS"})
+    public void testDispenserVazioApósRetirada(Moeda moeda) {
+        dispenser = new EntradaEDispenserDeDinheiro(10, 10, 10, 10, 10);
         dispenser.simulaColocarMoeda(notificavel, moeda);
-        assertEquals(true, dispenser.hasDinheiroColocado());
-        
-        try {
-            dispenser.devolverDinheiro();
-            assertEquals(true, dispenser.hasMoedasDevolvidas());
-            dispenser.simulaPegarMoedas(notificavel, moeda); // Adicionado o parâmetro notificavel
-            assertEquals(false, dispenser.hasMoedasDevolvidas());
-        } catch (EntradaDeDinheiroEntupidaException ex) {
-            Logger.getLogger(EntradaEDispenserDeDinheiroTest.class.getName()).log(Level.SEVERE, null, ex);
+        dispenser.simulaPegarMoedas(notificavel, moeda);
+
+        assertFalse(dispenser.hasMoedasDevolvidas());
+    }
+
+    @Test
+    @Parameters({"CINCO_CENTAVOS, DEZ_CENTAVOS, VINTE_E_CINCO_CENTAVOS"})
+    public void testDevolverDinheiro(Moeda moeda1, Moeda moeda2, Moeda moeda3) {
+        dispenser = new EntradaEDispenserDeDinheiro(10, 10, 10, 10, 10);
+        Moeda[] moedas = {moeda1, moeda2, moeda3};
+        for (Moeda moeda : moedas) {
+            dispenser.simulaColocarMoeda(notificavel, moeda);
+            assertEquals(true, dispenser.hasDinheiroColocado());
+
+            try {
+                dispenser.devolverDinheiro();
+                assertEquals(true, dispenser.hasMoedasDevolvidas());
+                dispenser.simulaPegarMoedas(notificavel, moeda);
+                assertEquals(false, dispenser.hasMoedasDevolvidas());
+            } catch (EntradaDeDinheiroEntupidaException ex) {
+                Logger.getLogger(EntradaEDispenserDeDinheiroTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 }
-
-
-}
-
