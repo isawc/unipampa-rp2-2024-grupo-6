@@ -5,31 +5,39 @@ import excecoes.SinalInvalidoException;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import junitparams.Parameters;
+import junitparams.JUnitParamsRunner;
+import org.junit.runner.RunWith;
 
+@RunWith(JUnitParamsRunner.class)
 public class DispenserDeBebidasTest {
 
     private DispenserDeBebidas dispenser;
-    private NotificacaoNew notificavel; // Variável 'notificavel' do tipo NotificacaoNew
-
+    private NotificacaoNew notificavel;
+    
     @Before
     public void setUp() {
         dispenser = new DispenserDeBebidas(10, 10, 10, 10, 10, 10, 10, 10, 10, 10);
-        notificavel = new NotificacaoNew(); // Inicializando 'notificavel'
+        notificavel = new NotificacaoNew();
     }
-    //CORRIGIDO
+    //parametrizado (isaac)
     @Test
-    public void testLiberarProdutoComQuantidadeDisponivel() throws SemProdutoDisponivelException, SinalInvalidoException, DispenserEmperradoException {
+    @Parameters({
+        "179, 179",
+        "193, 193",
+        "199, 199"
+    })
+    public void testLiberarProdutoComQuantidadeDisponivel(int idBebida, int bebidaEsperada)
+            throws SemProdutoDisponivelException, SinalInvalidoException, DispenserEmperradoException {
         dispenser.destravar();
-        dispenser.liberarProduto(DispenserDeBebidas.COCA_COLA);
-        
-        // Passando o 'notificavel' como parâmetro
-        dispenser.simulaAbrirPortinha(notificavel);  // Corrigido: passando 'notificavel' como parâmetro
-        assertEquals(DispenserDeBebidas.COCA_COLA, dispenser.simulaPegarBebida());
-        
-        // Passando o 'notificavel' para simulaFecharPortinha
-        dispenser.simulaFecharPortinha(notificavel);  // Corrigido: passando 'notificavel' aqui também
+        dispenser.liberarProduto(idBebida);
 
-        System.out.println("produto liberado!");
+        dispenser.simulaAbrirPortinha(notificavel);
+        assertEquals(bebidaEsperada, dispenser.simulaPegarBebida());
+
+        dispenser.simulaFecharPortinha(notificavel);
+
+        System.out.println("Produto liberado com sucesso para bebida: " + idBebida);
     }
 
     @Test
@@ -39,7 +47,7 @@ public class DispenserDeBebidasTest {
 
         try {
             dispenser.liberarProduto(DispenserDeBebidas.COCA_COLA);
-            fail("erro");
+            fail("Erro esperado devido ao estoque vazio.");
         } catch (SemProdutoDisponivelException e) {
             System.out.println("Sem estoque.");
         }
@@ -51,28 +59,36 @@ public class DispenserDeBebidasTest {
 
         try {
             dispenser.liberarProduto(99);
-            fail("não é para liberar!");
+            fail("Não é para liberar!");
         } catch (SinalInvalidoException e) {
             System.out.println("Produto inválido!");
         } catch (SemProdutoDisponivelException e) {
             fail("Esperava SinalInvalidoException, mas uma exceção diferente foi lançada.");
         }
     }
-    //corrigido
+    //parametrizado
     @Test
-    public void testAbrirFecharPortinhaComProdutoLiberado() throws SemProdutoDisponivelException, SinalInvalidoException, DispenserEmperradoException {
+    @Parameters({
+        "true",
+        "false"
+    })
+    public void testAbrirFecharPortinhaComProdutoLiberado(boolean portinhaEsperadaAberta) 
+            throws SemProdutoDisponivelException, SinalInvalidoException, DispenserEmperradoException {
         dispenser.destravar();
         dispenser.liberarProduto(DispenserDeBebidas.COCA_COLA);
 
-        // Passando 'notificavel' para simulaAbrirPortinha
-        dispenser.simulaAbrirPortinha(notificavel);  // Corrigido: passando 'notificavel' como parâmetro
-        assertTrue(dispenser.isAberto());
-        System.out.println("Teste de abertura da portinha aprovado.");
+        dispenser.simulaAbrirPortinha(notificavel);
 
-        // Passando 'notificavel' para simulaFecharPortinha
-        dispenser.simulaFecharPortinha(notificavel);  // Corrigido: passando 'notificavel' aqui também
-        assertFalse(dispenser.isAberto());
-        System.out.println("Teste de fechamento da portinha aprovado.");
+        assertTrue("Esperava que a portinha estivesse aberta após liberar o produto", dispenser.isAberto());
+
+        dispenser.simulaFecharPortinha(notificavel);
+
+        assertFalse("Esperava que a portinha estivesse fechada após o fechamento explícito", dispenser.isAberto());
+
+        dispenser.simulaFecharPortinha(notificavel);
+
+        assertFalse("Esperava que a portinha estivesse fechada após fechamento", dispenser.isAberto());
+        System.out.println("Teste de abertura e fechamento da portinha aprovado.");
     }
 
     @Test
@@ -81,5 +97,4 @@ public class DispenserDeBebidasTest {
         assertFalse(dispenser.isAberto());
         assertTrue(dispenser.isTravado());
     }
-
 }
