@@ -2,7 +2,11 @@ import io.Display;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import junitparams.Parameters;
+import junitparams.JUnitParamsRunner;
+import org.junit.runner.RunWith;
 
+@RunWith(JUnitParamsRunner.class)
 public class DisplayTest {
 
     private Display display;
@@ -13,28 +17,42 @@ public class DisplayTest {
     }
 
     @Test
-    public void testDisplayProntoParaUso() {
-        display.mostrarMensagem("PRONTO");
+    @Parameters({
+        "PRONTO"
+    })
+    public void testDisplayProntoParaUso(String mensagemEsperada) {
+        display.mostrarMensagem(mensagemEsperada);
         String mensagemAtual = display.simulaVerMensagem();
         System.out.println(mensagemAtual);
-        assertEquals("PRONTO", mensagemAtual);
+        assertEquals(mensagemEsperada, mensagemAtual);
     }
 
     @Test
-    public void testMostrarMensagemCurta() {
-        // Testa com uma mensagem curta
-        String mensagemCurta = "Olá";
+    @Parameters({
+        "Olá",  
+        "Eai",   
+        "Oi"    
+    })
+    public void testMostrarMensagemCurta(String mensagemCurta) {
         display.mostrarMensagem(mensagemCurta);
         assertEquals(mensagemCurta, display.simulaVerMensagem());
     }
-   
-        @Test
+
+    @Test
     public void testMostrarMensagemLonga() {
-        // Testa com uma mensagem longa (maior que 25 caracteres)
         String mensagemLonga = "Esta é uma mensagem muito longa para o display";
         display.mostrarMensagem(mensagemLonga);
         assertEquals(mensagemLonga.substring(0, 25), display.simulaVerMensagem());
     }
 
-   
+    @Test
+    public void testEspacosNoInicio() {
+        String mensagem = " Mensagem com espaços no início";
+        String mensagemEsperada = mensagem.substring(0, 25);
+
+        display.mostrarMensagem(mensagem);
+
+        assertEquals("Os espaços no início devem ser considerados como caracteres.", mensagemEsperada, display.simulaVerMensagem());
+    }
+
 }
