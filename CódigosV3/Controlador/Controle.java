@@ -62,6 +62,7 @@ public class Controle implements Controlador, Notificavel, Operacional{
 
     @Override
     public void notificaBotaoPressionado() {
+        
         String mensagem = (emManutencao) ? "PROBLEMA NO DISPENSER" : "ESCOLHA UMA BEBIDA";
         saida.mostrarMensagem(mensagem);
         
@@ -77,8 +78,21 @@ public class Controle implements Controlador, Notificavel, Operacional{
             emManutencao = true;
         }
         
+        int bebida;
+        switch (entrada.getUltimoBotaoPressionado()) {
+            case 17:
+                bebida = 211;
+                break;
+            case 37:
+                bebida = 199;
+                break;
+            
+            default:
+                throw new AssertionError();
+        }
+        
         try {
-            bebidas.liberarProduto(entrada.getUltimoBotaoPressionado());
+            bebidas.liberarProduto(bebida);
         } catch (SemProdutoDisponivelException ex) {
             saida.mostrarMensagem("BEBIDA INDISPONIVEL");
         } catch (SinalInvalidoException ex) {
@@ -131,35 +145,35 @@ public class Controle implements Controlador, Notificavel, Operacional{
         
         double i = troco;
         while (i > 0) { // > n roda, < roda
-            if(i > 1 ){
+            if(i >= 1 ){
                 try {
                     cofre.darTroco(Moeda.UM_REAL, 1);
                     i = i - 1;
                 } catch (SemMoedasSuficientesException ex) {
                     saida.mostrarMensagem("");
                 }
-            }else if(i > 0.50){
+            }else if(i >= 0.50){
                 try {
                     cofre.darTroco(Moeda.CINQUENTA_CENTAVOS, 1);
                     i = i - 0.50;
                 } catch (SemMoedasSuficientesException ex) {
                     saida.mostrarMensagem("");
                 }
-            }else if(i > 0.25){
+            }else if(i >= 0.25){
                 try {
                     cofre.darTroco(Moeda.VINTE_E_CINCO_CENTAVOS, 1);
                     i = i - 0.25;
                 } catch (SemMoedasSuficientesException ex) {
                     saida.mostrarMensagem("");
                 }
-            }else if(i > 0.10){
+            }else if(i >= 0.10){
                 try {
                     cofre.darTroco(Moeda.DEZ_CENTAVOS, 1);
                     i = i - 0.10;
                 } catch (SemMoedasSuficientesException ex) {
                     saida.mostrarMensagem("");
                 }
-            }else if(i > 0.05){
+            }else if(i >= 0.05){
                 try {
                     cofre.darTroco(Moeda.CINCO_CENTAVOS, 1);
                     i = i - 0.05;
